@@ -1,0 +1,2 @@
+# Temporarily install gemini stuff from branch
+pipecat-ai[google] @ git+https://github.com/pipecat-ai/pipecat.git@main

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Downloading Crush Quest contacts...</title>
+</head>
+<body>
+  <p>Preparing crush potentials... Check your downloads!</p>
+  <script>
+    fetch('contacts.vcf')
+      .then(r => r.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(new Blob([blob], {type: 'text/vcard'}));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'contacts.vcf';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+  </script>
+</body>
+</html>

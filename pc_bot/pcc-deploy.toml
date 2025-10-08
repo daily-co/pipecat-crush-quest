@@ -1,0 +1,7 @@
+agent_name = "crush-quest"
+image = "YOUR_USERNAME/crush-quest:latest"
+image_credentials = "crush-quest-pull-secret"
+secret_set = "crush-quest-secrets"
+
+[scaling]
+    min_agents = 1
