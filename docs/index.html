@@ -1,418 +1,518 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ᓚᘏᗢ Pipecat Crush Quest 📞</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            background: #000;
-            font-family: "Comic Sans MS", "Courier New", monospace;
-            color: #fff;
-            padding: 20px;
-            background-image: 
-                repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 0, 255, 0.03) 10px, rgba(255, 0, 255, 0.03) 20px),
-                repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(0, 255, 255, 0.03) 10px, rgba(0, 255, 255, 0.03) 20px);
-        }
+      body {
+        background: #000;
+        font-family: "Comic Sans MS", "Courier New", monospace;
+        color: #fff;
+        padding: 20px;
+        background-image: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 10px,
+            rgba(255, 0, 255, 0.03) 10px,
+            rgba(255, 0, 255, 0.03) 20px
+          ),
+          repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 255, 255, 0.03) 10px,
+            rgba(0, 255, 255, 0.03) 20px
+          );
+      }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
 
-        header {
-            text-align: center;
-            padding: 40px 20px;
-            position: relative;
-            margin-bottom: 5px;
-        }
+      header {
+        text-align: center;
+        padding: 40px 20px;
+        position: relative;
+        margin-bottom: 5px;
+      }
 
-        h1 {
-            font-size: 3.5em;
-            text-shadow: 
-                3px 3px 0 #ff00ff,
-                6px 6px 0 #00ffff,
-                9px 9px 20px rgba(255, 0, 255, 0.5);
-            letter-spacing: 3px;
-            animation: glitch 3s infinite;
-            position: relative;
-            display: inline-block;
-        }
+      h1 {
+        font-size: 3.5em;
+        text-shadow: 3px 3px 0 #ff00ff, 6px 6px 0 #00ffff,
+          9px 9px 20px rgba(255, 0, 255, 0.5);
+        letter-spacing: 3px;
+        animation: glitch 3s infinite;
+        position: relative;
+        display: inline-block;
+      }
 
-        @keyframes glitch {
-            0%, 100% { transform: translate(0); }
-            33% { transform: translate(-2px, 2px); }
-            66% { transform: translate(2px, -2px); }
+      @keyframes glitch {
+        0%,
+        100% {
+          transform: translate(0);
         }
-
-        .cat {
-            font-size: 2em;
-            display: inline-block;
-            animation: bounce 1s infinite ease-in-out;
+        33% {
+          transform: translate(-2px, 2px);
         }
-
-        .cat:nth-child(1) { animation-delay: 0s; }
-        .cat:nth-child(2) { animation-delay: 0.2s; }
-        .cat:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        66% {
+          transform: translate(2px, -2px);
         }
+      }
 
-        .squiggle {
-            position: absolute;
-            width: 100%;
-            height: 30px;
-            background: 
-                repeating-linear-gradient(90deg, 
-                    transparent 0px, 
-                    transparent 10px, 
-                    #ff00ff 10px, 
-                    #ff00ff 12px,
-                    transparent 12px,
-                    transparent 20px,
-                    #00ffff 20px,
-                    #00ffff 22px);
-            opacity: 0.3;
-        }
+      .cat {
+        font-size: 2em;
+        display: inline-block;
+        animation: bounce 1s infinite ease-in-out;
+      }
 
-        .location-group {
-            background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(40, 20, 40, 0.8) 100%);
-            border: 3px solid #ff00ff;
-            border-radius: 0;
-            padding: 30px;
-            margin-bottom: 40px;
-            position: relative;
-            box-shadow: 
-                5px 5px 0 #00ffff,
-                10px 10px 0 rgba(255, 0, 255, 0.3),
-                inset 0 0 50px rgba(255, 0, 255, 0.1);
-        }
+      .cat:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .cat:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .cat:nth-child(3) {
+        animation-delay: 0.4s;
+      }
 
-        .location-group::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 5px,
-                rgba(0, 255, 255, 0.1) 5px,
-                rgba(0, 255, 255, 0.1) 10px
-            );
-            z-index: -1;
-            pointer-events: none;
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
         }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
 
-        .location-title {
-            font-size: 2em;
-            color: #ff00ff;
-            text-transform: uppercase;
-            margin-bottom: 25px;
-            text-shadow: 2px 2px 0 #00ffff, 4px 4px 10px rgba(255, 0, 255, 0.5);
-            letter-spacing: 2px;
-            border-bottom: 3px dashed #00ffff;
-            padding-bottom: 10px;
-        }
+      .squiggle {
+        position: absolute;
+        width: 100%;
+        height: 30px;
+        background: repeating-linear-gradient(
+          90deg,
+          transparent 0px,
+          transparent 10px,
+          #ff00ff 10px,
+          #ff00ff 12px,
+          transparent 12px,
+          transparent 20px,
+          #00ffff 20px,
+          #00ffff 22px
+        );
+        opacity: 0.3;
+      }
 
-        .character-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-        }
+      .location-group {
+        background: linear-gradient(
+          135deg,
+          rgba(20, 20, 20, 0.9) 0%,
+          rgba(40, 20, 40, 0.8) 100%
+        );
+        border: 3px solid #ff00ff;
+        border-radius: 0;
+        padding: 30px;
+        margin-bottom: 40px;
+        position: relative;
+        box-shadow: 5px 5px 0 #00ffff, 10px 10px 0 rgba(255, 0, 255, 0.3),
+          inset 0 0 50px rgba(255, 0, 255, 0.1);
+      }
 
-        .character-card {
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #00ffff;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
+      .location-group::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 5px,
+          rgba(0, 255, 255, 0.1) 5px,
+          rgba(0, 255, 255, 0.1) 10px
+        );
+        z-index: -1;
+        pointer-events: none;
+      }
 
-        .character-card:hover {
-            transform: rotate(-1deg) scale(1.05);
-            box-shadow: 
-                0 0 20px #ff00ff,
-                0 0 40px #00ffff,
-                inset 0 0 20px rgba(255, 0, 255, 0.2);
-            border-color: #ff00ff;
-        }
+      .location-title {
+        font-size: 2em;
+        color: #ff00ff;
+        text-transform: uppercase;
+        margin-bottom: 25px;
+        text-shadow: 2px 2px 0 #00ffff, 4px 4px 10px rgba(255, 0, 255, 0.5);
+        letter-spacing: 2px;
+        border-bottom: 3px dashed #00ffff;
+        padding-bottom: 10px;
+      }
 
-        .character-card::after {
-            content: '';
-            position: absolute;
-            top: 5px;
-            left: 5px;
-            right: 5px;
-            bottom: 5px;
-            border: 1px solid rgba(255, 0, 255, 0.3);
-            pointer-events: none;
-        }
+      .character-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+      }
 
-       .qr {
-            width: 300px;
-            margin: 0 auto 15px;
-            position: relative;
-            overflow: hidden;
-        }        
+      .character-card {
+        background: rgba(0, 0, 0, 0.7);
+        border: 2px solid #00ffff;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
 
-       .character-image {
-            width: 100%;
-            background: linear-gradient(45deg, #ff00ff, #00ffff);
-            margin: 0 auto 15px;
-            border: 3px solid #fff;
-            box-shadow: 5px 5px 0 rgba(0, 255, 255, 0.5);
-            position: relative;
-            overflow: hidden;
-        }
+      .character-card:hover {
+        transform: rotate(-1deg) scale(1.05);
+        box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff,
+          inset 0 0 20px rgba(255, 0, 255, 0.2);
+        border-color: #ff00ff;
+      }
 
-        .character-image::before {
-            content: '📷';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4em;
-            opacity: 0.0;
-        }
+      .character-card::after {
+        content: "";
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        right: 5px;
+        bottom: 5px;
+        border: 1px solid rgba(255, 0, 255, 0.3);
+        pointer-events: none;
+      }
 
-        .character-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            display: block;
-        }
+      .qr {
+        width: 300px;
+        margin: 0 auto 15px;
+        position: relative;
+        overflow: hidden;
+      }
 
-        .character-name {
-            font-size: 1.5em;
-            color: #ff00ff;
-            margin-bottom: 5px;
-            text-shadow: 1px 1px 0 #00ffff;
-            font-weight: bold;
-        }
+      .character-image {
+        width: 100%;
+        background: linear-gradient(45deg, #ff00ff, #00ffff);
+        margin: 0 auto 15px;
+        border: 3px solid #fff;
+        box-shadow: 5px 5px 0 rgba(0, 255, 255, 0.5);
+        position: relative;
+        overflow: hidden;
+      }
 
-        .character-phone {
-            font-family: "Courier New", monospace;
-            color: #00ffff;
-            font-size: 1.651em;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px;
-            border: 1px dashed #ff00ff;
-            display: inline-block;
-            margin-top: 10px;
-        }
+      .character-image::before {
+        content: "📷";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 4em;
+        opacity: 0;
+      }
 
-        .laser-line {
-            height: 2px;
-            background: linear-gradient(90deg, 
-                transparent 0%, 
-                #ff00ff 20%, 
-                #00ffff 50%, 
-                #ff00ff 80%, 
-                transparent 100%);
-            margin: 30px 0;
-            box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
-            animation: laser-pulse 2s infinite;
-        }
+      .character-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+      }
 
-        @keyframes laser-pulse {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
+      .character-name {
+        font-size: 1.5em;
+        color: #ff00ff;
+        margin-bottom: 5px;
+        text-shadow: 1px 1px 0 #00ffff;
+        font-weight: bold;
+      }
 
-        .content {
-            border: 3px solid #9370DB;
-            padding: 20px;
-            margin: 20px 0;
-            line-height: 1.6;
-            background: rgba(0, 0, 0, 0.42);
-        }
-        .content-header {
-            color: #00ffff;
-        }
+      .character-phone {
+        font-family: "Courier New", monospace;
+        color: #00ffff;
+        font-size: 1.651em;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 8px;
+        border: 1px dashed #ff00ff;
+        display: inline-block;
+        margin-top: 10px;
+      }
 
-        .generic-space {
-            padding-bottom: 5px;
-        }
-        
-        .blink-text {
-            animation: blink 1s infinite;
-            color: #FF0000;
-            font-weight: bold;
-        }
-        
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }        
-        
-        marquee {
-            padding: 5px 0 0;
-        }
+      .laser-line {
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          #ff00ff 20%,
+          #00ffff 50%,
+          #ff00ff 80%,
+          transparent 100%
+        );
+        margin: 30px 0;
+        box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff;
+        animation: laser-pulse 2s infinite;
+      }
 
-        .left-mar {
-            margin-left: 50px;
-        }        
-
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            padding: 20px;
-            color: #00ffff;
-            font-size: 0.9em;
+      @keyframes laser-pulse {
+        0%,
+        100% {
+          opacity: 0.5;
         }
+        50% {
+          opacity: 1;
+        }
+      }
 
-/*        laser bg*/
-    body {
+      .content {
+        border: 3px solid #9370db;
+        padding: 20px;
+        margin: 20px 0;
+        line-height: 1.6;
+        background: rgba(0, 0, 0, 0.42);
+      }
+      .content-header {
+        color: #00ffff;
+      }
+
+      .generic-space {
+        padding-bottom: 5px;
+      }
+
+      .blink-text {
+        animation: blink 1s infinite;
+        color: #ff0000;
+        font-weight: bold;
+      }
+
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      marquee {
+        padding: 5px 0 0;
+      }
+
+      .left-mar {
+        margin-left: 50px;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 50px;
+        padding: 20px;
+        color: #00ffff;
+        font-size: 0.9em;
+      }
+
+      /*        laser bg*/
+      body {
         background-image: url("img/dark_laser.jpg");
-        background-repeat: repeat;
-        background-position: center top;
-        background-size:cover;
+        background-size: cover;
         background-attachment: fixed;
-    }
+        @media screen and (max-width: 600px) {
+          background-size: auto;
+        }
+      }
 
+      .public-gh {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background: rgb(0, 0, 0);
+        color: #fff;
+        padding: 10px 10px;
+        border: 2px solid #00ffff;
+        text-decoration: none;
+        font-weight: bold;
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div class="squiggle"></div>
-            <div style="margin: 20px 0;">
-                <span class="cat">😻</span>
-                <span class="cat">🐱</span>
-                <span class="cat">😻</span>
-            </div>
-            <h1>Pipecat Crush Quest</h1>
-            <div style="margin: 20px 0;">
-                <span class="cat">😻</span>
-                <span class="cat">😻</span>
-            </div>
-        </header>
-
-        <marquee><span class="cat">☎️</span> Ring Ring! <span class="cat">☎️</span><b class="content-header">ᓚᘏᗢ</b> Welcome to the Pipecat Crush Quest game board! <b class="content-header">ᓚᘏᗢ</b> <span class="cat">☎️</span> Ring Ring! <span class="cat">☎️</span></marquee>
-
-        <div class="content">
-        <p class="generic-space"><b class="content-header">Welcome back to 1998, here's the 411:</b></p>
-        <p class="left-mar">one of these 12 cuties has the hots for you <3.</p>
-        <p class="left-mar">ring them up on the telephone and ask for clues (🧢 🧥) to figure out who *likes* you.</p>
-        <p class="left-mar">each day a new crush awaits your call!</p>
-        </div>
-
-        <div class="laser-line"></div>
-
-        <div class="location-group">
-            <h2 class="location-title">~ Exton Mall ~</h2>
-            <div class="character-grid">
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Alex-1759956064.6494179.jpg"></div>
-                    <div class="character-name">Alex 🍪 🧢</div>
-                    <div class="character-phone">+1-337-333-8079</div>
-                </div>
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Sam-1759955593.622684.jpg"></div>
-                    <div class="character-name">Sam 🍬 🧢</div>
-                    <div class="character-phone">+1-337-333-8081</div>
-                </div>
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Jordan-1759897698.631128.jpg"></div>
-                    <div class="character-name">Jordan 🍕 🧢</div>
-                    <div class="character-phone">+1-337-333-8087</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="laser-line"></div>
-
-        <div class="location-group">
-            <h2 class="location-title">~ Moviez 4 Reel ~</h2>
-            <div class="character-grid">
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Taylor-1759870373.721441.jpg"></div>
-                    <div class="character-name">Taylor 🍕 👓</div>
-                    <div class="character-phone">+1-337-333-8444</div>
-                </div>
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Morgan-1759870379.800228.jpg"></div>
-                    <div class="character-name">Morgan 🍬 🟢</div>
-                    <div class="character-phone">+1-337-333-8049</div>
-                </div>            
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Chris-1759870386.443118.jpg"></div>
-                    <div class="character-name">Chris 🍪 🧢</div>
-                    <div class="character-phone">+1-337-333-8102</div>
-                </div>                     
-            </div>
-        </div>
-
-        <div class="laser-line"></div>
-
-        <div class="location-group">
-            <h2 class="location-title">~ Litehouse Beach ~</h2>
-            <div class="character-grid">
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Casey-1759870393.4290838.jpg"></div>
-                    <div class="character-name">Casey 🏐 🧥</div>
-                    <div class="character-phone">+1-337-333-8059</div>
-                </div>
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Drew-1759870399.600501.jpg"></div>
-                    <div class="character-name">Drew 🎾 👓</div>
-                    <div class="character-phone">+1-337-333-8133</div>
-                </div>
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Skyler-1759870406.300543.jpg"></div>
-                    <div class="character-name">Skyler 🏀 🟢</div>
-                    <div class="character-phone">+1-337-333-8095</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="laser-line"></div>
-
-        <div class="location-group">
-            <h2 class="location-title">~ RecPlex Gym ~</h2>
-            <div class="character-grid">
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Jamie-1759870413.59007.jpg"></div>
-                    <div class="character-name">Jamie 🏀 🧢</div>
-                    <div class="character-phone">+1-337-333-8061</div>
-                </div>
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Avery-1759870420.251284.jpg"></div>
-                    <div class="character-name">Avery 🎾 🧥</div>
-                    <div class="character-phone">+1-337-333-8021</div>
-                </div>
-                <div class="character-card">
-                    <div class="character-image"><img src="img/Riley-1759870426.198199.jpg"></div>
-                    <div class="character-name">Riley 🏐 👓</div>
-                    <div class="character-phone">+1-337-333-8082</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="laser-line"></div>
-
-        <footer>
-            <p class="blink-text">★ UNDER CONSTRUCTION ★</p>
-            So are you staying here in 1998?
-            <p><span class="cat">🐱</span> Built with <a href="https://github.com/pipecat-ai/pipecat"> Pipecat<a/><span class="cat">🐱</span><p>
-            <p>This page has been visited <b>000042</b> times!</p>
-            <div class="laser-line"></div>
-            <p>Download all crush potentials into your phone contacts:</p>
-            <p>(prolly will only work with android)</p>
-            <div class="qr"><img src="img/crush_quest_contacts_qr.png"></div>
-        </footer>
+  </head>
+  <body>
+    <div class="public-gh">
+      <span
+        ><a href="https://github.com/daily-co/pipecat-crush-quest"
+          >View on GitHub</a
+        ></span
+      >
     </div>
-</body>
+    <div class="container">
+      <header>
+        <div class="squiggle"></div>
+        <div style="margin: 20px 0">
+          <span class="cat">😻</span>
+          <span class="cat">🐱</span>
+          <span class="cat">😻</span>
+        </div>
+        <h1>Pipecat Crush Quest</h1>
+        <div style="margin: 20px 0">
+          <span class="cat">😻</span>
+          <span class="cat">😻</span>
+        </div>
+      </header>
+
+      <marquee
+        ><span class="cat">☎️</span> Ring Ring! <span class="cat">☎️</span
+        ><b class="content-header">ᓚᘏᗢ</b> Welcome to the Pipecat Crush Quest
+        game board! <b class="content-header">ᓚᘏᗢ</b>
+        <span class="cat">☎️</span> Ring Ring!
+        <span class="cat">☎️</span></marquee
+      >
+
+      <div class="content">
+        <p class="generic-space">
+          <b class="content-header">Welcome back to 1998, here's the 411:</b>
+        </p>
+        <p class="left-mar">one of these 12 cuties has the hots for you <3.</p>
+        <p class="left-mar">
+          ring them up on the telephone and ask for clues (🧢 🧥) to figure out
+          who *likes* you.
+        </p>
+        <p class="left-mar">each day a new crush awaits your call!</p>
+      </div>
+
+      <div class="laser-line"></div>
+
+      <div class="location-group">
+        <h2 class="location-title">~ Exton Mall ~</h2>
+        <div class="character-grid">
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Alex-1759956064.6494179.jpg" />
+            </div>
+            <div class="character-name">Alex 🍪 🧢</div>
+            <div class="character-phone">+1-337-333-8079</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Sam-1759955593.622684.jpg" />
+            </div>
+            <div class="character-name">Sam 🍬 🧢</div>
+            <div class="character-phone">+1-337-333-8081</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Jordan-1759897698.631128.jpg" />
+            </div>
+            <div class="character-name">Jordan 🍕 🧢</div>
+            <div class="character-phone">+1-337-333-8087</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="laser-line"></div>
+
+      <div class="location-group">
+        <h2 class="location-title">~ Moviez 4 Reel ~</h2>
+        <div class="character-grid">
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Taylor-1759870373.721441.jpg" />
+            </div>
+            <div class="character-name">Taylor 🍕 👓</div>
+            <div class="character-phone">+1-337-333-8444</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Morgan-1759870379.800228.jpg" />
+            </div>
+            <div class="character-name">Morgan 🍬 🟢</div>
+            <div class="character-phone">+1-337-333-8049</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Chris-1759870386.443118.jpg" />
+            </div>
+            <div class="character-name">Chris 🍪 🧢</div>
+            <div class="character-phone">+1-337-333-8102</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="laser-line"></div>
+
+      <div class="location-group">
+        <h2 class="location-title">~ Litehouse Beach ~</h2>
+        <div class="character-grid">
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Casey-1759870393.4290838.jpg" />
+            </div>
+            <div class="character-name">Casey 🏐 🧥</div>
+            <div class="character-phone">+1-337-333-8059</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Drew-1759870399.600501.jpg" />
+            </div>
+            <div class="character-name">Drew 🎾 👓</div>
+            <div class="character-phone">+1-337-333-8133</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Skyler-1759870406.300543.jpg" />
+            </div>
+            <div class="character-name">Skyler 🏀 🟢</div>
+            <div class="character-phone">+1-337-333-8095</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="laser-line"></div>
+
+      <div class="location-group">
+        <h2 class="location-title">~ RecPlex Gym ~</h2>
+        <div class="character-grid">
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Jamie-1759870413.59007.jpg" />
+            </div>
+            <div class="character-name">Jamie 🏀 🧢</div>
+            <div class="character-phone">+1-337-333-8061</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Avery-1759870420.251284.jpg" />
+            </div>
+            <div class="character-name">Avery 🎾 🧥</div>
+            <div class="character-phone">+1-337-333-8021</div>
+          </div>
+          <div class="character-card">
+            <div class="character-image">
+              <img src="img/Riley-1759870426.198199.jpg" />
+            </div>
+            <div class="character-name">Riley 🏐 👓</div>
+            <div class="character-phone">+1-337-333-8082</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="laser-line"></div>
+
+      <footer>
+        <p class="blink-text">★ UNDER CONSTRUCTION ★</p>
+        So are you staying here in 1998?
+        <p>
+          <span class="cat">🐱</span> Built with
+          <a href="https://github.com/pipecat-ai/pipecat"> Pipecat</a
+          ><span class="cat">🐱</span>
+        </p>
+        <p></p>
+        <p>This page has been visited <b>000042</b> times!</p>
+        <div class="laser-line"></div>
+        <p>Download all crush potentials into your phone contacts:</p>
+        <p>(prolly will only work with android)</p>
+        <div class="qr"><img src="img/crush_quest_contacts_qr.png" /></div>
+      </footer>
+    </div>
+  </body>
 </html>
