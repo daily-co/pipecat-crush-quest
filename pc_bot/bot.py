@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: BSD 2-Clause License
 #
 
+import asyncio
 import json
 import os
 from datetime import datetime
@@ -17,7 +18,12 @@ from pipecat.audio.turn.smart_turn.base_smart_turn import SmartTurnParams
 from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.frames.frames import EndFrame, EndTaskFrame, LLMMessagesAppendFrame, TTSSpeakFrame
+from pipecat.frames.frames import (
+    EndFrame,
+    EndTaskFrame,
+    LLMMessagesAppendFrame,
+    TTSSpeakFrame,
+)
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -90,7 +96,6 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     prompt = (
         f"{clue_giver['character']} You are a character in a 90s board game giving clues to the player about their secret crush."
-        "always, alwasys, always start the conversation. you are answering the call of a player. answer with 'hello?' or another typical, short phone answer. Wait for the player to respond."
         "focus on NOT sounding like a robot. listen to the player."
         "liberally use early-mid 1990s teenage slang, not boomer slang. talk like you are in the tv show 'my so-called life'."
         "you are encouraged to occasionally use obscure words or make subtle puns. don't point them out, I'll know."
@@ -140,14 +145,18 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         await params.llm.push_frame(TTSSpeakFrame(params.arguments["response"]))
         await params.llm.queue_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
+
+    gemini_model = "gemini-2.5-flash-preview-native-audio-dialog"
+    # gemini_model = "gemini-2.5-flash-native-audio-preview-09-2025"
+    logger.debug(f"________** USING GEMINI MODEL: {gemini_model}")
+
     # Initialize the Gemini Live model
     llm = GeminiLiveLLMService(
         api_key=os.getenv("GOOGLE_API_KEY"),
         voice_id=clue_giver["voice_id"],
         system_instruction=prompt,
         tools=tools,
-        # model="gemini-2.5-flash-preview-native-audio-dialog",
-        model="gemini-2.5-flash-native-audio-preview-09-2025",
+        model=gemini_model,
         http_options=HttpOptions(api_version="v1alpha"),
         input_params=InputParams(
             enable_affective_dialog=True,
@@ -204,6 +213,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         logger.info(f"Client connected: {client}")
+        await asyncio.sleep(1)
         # Kick off the conversation.
         await task.queue_frames(
             [
@@ -211,7 +221,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
                     messages=[
                         {
                             "role": "user",
-                            "content": f"Answer the call of a player. Say 'hello?' or another typical, short phone greeting (with 90's style). Wait for the player to respond.",
+                            "content": f"Always, alwasys, always start the conversation. Answer the call of a player. Say 'hello?' or another typical, short phone greeting (with 90's style). Wait for the player to respond.",
                         }
                     ],
                     run_llm=True,
