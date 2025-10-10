@@ -9,13 +9,6 @@ import os
 from datetime import datetime
 from typing import Optional
 
-from crush_utils.crush_util import (
-    get_clue,
-    get_clue_giver_index,
-    get_crush_index,
-    get_now_central_time,
-)
-from crush_utils.crushes import CRUSHES
 from dotenv import load_dotenv
 from loguru import logger
 from pipecat.adapters.schemas.function_schema import FunctionSchema
@@ -24,7 +17,7 @@ from pipecat.audio.turn.smart_turn.base_smart_turn import SmartTurnParams
 from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
-from pipecat.frames.frames import EndTaskFrame, LLMMessagesAppendFrame, TTSSpeakFrame, EndFrame
+from pipecat.frames.frames import EndFrame, EndTaskFrame, LLMMessagesAppendFrame, TTSSpeakFrame
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -32,24 +25,28 @@ from pipecat.processors.frame_processor import FrameDirection
 from pipecat.runner.types import RunnerArguments
 from pipecat.runner.utils import create_transport, parse_telephony_websocket
 from pipecat.serializers.twilio import TwilioFrameSerializer
-from pipecat.services.gemini_multimodal_live.gemini import (
-    GeminiMultimodalLiveContext,
-    GeminiMultimodalLiveLLMService,
-    # HttpOptions,
+from pipecat.services.google.gemini_live.llm import (
+    GeminiLiveContext,
+    GeminiLiveLLMService,
+    HttpOptions,
     InputParams,
-    # ProactivityConfig,
+    ProactivityConfig,
 )
-from google.genai.types import HttpOptions, ProactivityConfig
-
-from pipecat.transcriptions.language import Language
 from pipecat.services.google.tts import GoogleTTSService
-
+from pipecat.transcriptions.language import Language
 from pipecat.transports.base_transport import BaseTransport, TransportParams
 from pipecat.transports.websocket.fastapi import (
     FastAPIWebsocketParams,
     FastAPIWebsocketTransport,
 )
 
+from crush_utils.crush_util import (
+    get_clue,
+    get_clue_giver_index,
+    get_crush_index,
+    get_now_central_time,
+)
+from crush_utils.crushes import CRUSHES
 
 load_dotenv(override=True)
 
@@ -139,18 +136,18 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     tools = ToolsSchema(standard_tools=[end_conversation_function])
 
     async def handle_end_conversation(params):
-        print(f"_____bot.py * handle_end_conversation response: {params.arguments["response"]}")
+        print(f"_____bot.py * handle_end_conversation response: {params.arguments['response']}")
         await params.llm.push_frame(TTSSpeakFrame(params.arguments["response"]))
         await params.llm.queue_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
-    # Initialize the Gemini Multimodal Live model
-    llm = GeminiMultimodalLiveLLMService(
+    # Initialize the Gemini Live model
+    llm = GeminiLiveLLMService(
         api_key=os.getenv("GOOGLE_API_KEY"),
         voice_id=clue_giver["voice_id"],
         system_instruction=prompt,
         tools=tools,
-        model="gemini-2.5-flash-preview-native-audio-dialog",
-        # model="gemini-2.5-flash-native-audio-preview-09-2025",
+        # model="gemini-2.5-flash-preview-native-audio-dialog",
+        model="gemini-2.5-flash-native-audio-preview-09-2025",
         http_options=HttpOptions(api_version="v1alpha"),
         input_params=InputParams(
             enable_affective_dialog=True,
@@ -160,7 +157,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     llm.register_function("end_conversation", handle_end_conversation)
 
-    context = GeminiMultimodalLiveContext(messages, tools)
+    context = GeminiLiveContext(messages, tools)
     context_aggregator = llm.create_context_aggregator(context)
 
     # pipeline
@@ -186,19 +183,23 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @task.event_handler("on_pipeline_error")
     async def on_pipeline_error(task, frame):
         print(f"_____bot.py * on_pipeline_error")
-        # if there is an error, let's be cheeky and try to still deliver the clue. call it a "voicemail message"
-        llm = GoogleTTSService(
-            voice_id="en-US-Chirp3-HD-Charon",
-            params=GoogleTTSService.InputParams(language=Language.EN_US),
-            credentials=os.getenv("GOOGLE_TEST_CREDENTIALS"),
-        )
-        if clue_giver_is_crushin:
-            voicemail = f"Hey you've reached {clue_giver}, I can't come to the phone right now but if this is who I think it is, I really like you!"
-        else:
-            voicemail = f"Hey you've reached {clue_giver}, I can't come to the phone right now but if this is who I think it is, your crush clue is {clue}"
+        try:
+            # if there is an error, let's be cheeky and try to still deliver the clue. call it a "voicemail message"
+            llm = GoogleTTSService(
+                voice_id="en-US-Chirp3-HD-Charon",
+                params=GoogleTTSService.InputParams(language=Language.EN_US),
+                credentials=os.getenv("GOOGLE_TEST_CREDENTIALS"),
+            )
+            if clue_giver_is_crushin:
+                voicemail = f"Hey you've reached {clue_giver}, I can't come to the phone right now but if this is who I think it is, I really like you!"
+            else:
+                voicemail = f"Hey you've reached {clue_giver}, I can't come to the phone right now but if this is who I think it is, your crush clue is {clue}"
 
-        logger.debug(f"_____on_pipeline_error voicemail message: {voicemail}")
-        await task.queue_frames([TTSSpeakFrame(f"{voicemail}"), EndFrame()])
+            logger.debug(f"_____on_pipeline_error voicemail message: {voicemail}")
+            await task.queue_frames([TTSSpeakFrame(f"{voicemail}"), EndFrame()])
+        except Exception as e:
+            print(f"_____bot.py * on_pipeline_error error [sic]: {e}")
+            await task.queue_frame(EndFrame())
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
