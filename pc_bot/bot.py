@@ -97,9 +97,10 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     prompt = (
         f"{clue_giver['character']} You are a character in a 90s board game giving clues to the player about their secret crush."
         "focus on NOT sounding like a robot. listen to the player."
+        "always start the conversation like you are answering the call of a player. Say 'hello?' or another typical, short phone greeting (with 90's style). Wait for the player to respond."
         "liberally use early-mid 1990s teenage slang, not boomer slang. talk like you are in the tv show 'my so-called life'."
         "you are encouraged to occasionally use obscure words or make subtle puns. don't point them out, I'll know."
-        "when the conversation is over or the user says bye, say 'talk to you later' and then use the `end_conversation` tool. Always use the `end_conversation` tool call."
+        "when the conversation is over or the user says bye, say 'talk to you later' and then use the `end_conversation` tool. Only call this after you have given the clue AND said 'bye, talk to you later'"
     )
 
     prompt += (
@@ -112,7 +113,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     clue_giver_is_crushin = False
     if crush_idx == clue_giver_idx:
-        prompt += "If the player asks you if you are their crush, say 'Yes, I really like you!' and give them props for their charm and winning personality."
+        prompt += "If the player asks you if you have a crush on them or asks if you like them, say 'Yes, I really like you!' and give them props for their charm and winning personality."
         # to determine what voicemail should be (in case of llm error)
         clue_giver_is_crushin = True
 
@@ -143,6 +144,8 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     async def handle_end_conversation(params):
         print(f"_____bot.py * handle_end_conversation response: {params.arguments['response']}")
         await params.llm.push_frame(TTSSpeakFrame(params.arguments["response"]))
+        # ensure we hear any response before ending call
+        await asyncio(10)
         await params.llm.queue_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
 
@@ -187,6 +190,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
             enable_metrics=True,
             enable_usage_metrics=True,
         ),
+        idle_timeout_secs=90
     )
 
     @task.event_handler("on_pipeline_error")
@@ -221,7 +225,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
                     messages=[
                         {
                             "role": "user",
-                            "content": f"Always, alwasys, always start the conversation. Answer the call of a player. Say 'hello?' or another typical, short phone greeting (with 90's style). Wait for the player to respond.",
+                            "content": f"Heyhey"
                         }
                     ],
                     run_llm=True,
