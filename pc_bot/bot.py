@@ -149,8 +149,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         await params.llm.queue_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
 
-    gemini_model = "gemini-2.5-flash-preview-native-audio-dialog"
-    # gemini_model = "gemini-2.5-flash-native-audio-preview-09-2025"
+    gemini_model = "gemini-2.5-flash-native-audio-preview-09-2025"
     logger.debug(f"________** USING GEMINI MODEL: {gemini_model}")
 
     # Initialize the Gemini Live model
