@@ -22,9 +22,7 @@ def get_crush_index(phone_number: str, dt: datetime) -> int:
     logger.info(f"_____bot.py * get_crush_index str(phone_number): {str(phone_number)}")
     logger.info(f"_____bot.py * get_crush_index str(dt.date()): {str(dt.date())}")
     logger.info(f"_____bot.py * get_crush_index idx: {idx}")
-    logger.debug(
-        f"________** crush_idx: {idx}; YOUR CRUSH IS: {CRUSHES[idx]['name']}"
-    )
+    logger.debug(f"________** crush_idx: {idx}; YOUR CRUSH IS: {CRUSHES[idx]['name']}")
 
     return idx
 
