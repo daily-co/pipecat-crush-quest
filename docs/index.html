@@ -352,9 +352,120 @@
         text-decoration: none;
         font-weight: bold;
       }
+
+      /* Call button styles */
+      .call-button {
+        background: linear-gradient(135deg, #ff00ff 0%, #00ffff 100%);
+        border: 2px solid #fff;
+        color: #fff;
+        padding: 10px 20px;
+        font-family: "Comic Sans MS", "Courier New", monospace;
+        font-size: 1.2em;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+        text-shadow: 1px 1px 2px #000;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: inline-block;
+      }
+      .call-button:hover:not(.disabled) {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px #ff00ff, 0 0 30px #00ffff;
+      }
+      .call-button.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Caller ID input */
+      .caller-id-container {
+        background: rgba(0, 0, 0, 0.8);
+        border: 2px solid #00ffff;
+        padding: 15px 20px;
+        margin: 20px 0;
+        text-align: center;
+      }
+      .caller-id-container label {
+        color: #ff00ff;
+        font-size: 1.1em;
+        margin-right: 10px;
+      }
+      .caller-id-container input {
+        background: #000;
+        border: 2px solid #ff00ff;
+        color: #00ffff;
+        padding: 8px 12px;
+        font-family: "Courier New", monospace;
+        font-size: 1em;
+        width: 200px;
+      }
+
+      /* Call status UI */
+      .call-status {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.95);
+        border: 3px solid #ff00ff;
+        padding: 15px 30px;
+        z-index: 1000;
+        text-align: center;
+        box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+        display: none;
+      }
+      .call-status-connecting {
+        border-color: #ffff00;
+        animation: pulse-yellow 1s infinite;
+      }
+      .call-status-connected {
+        border-color: #00ff00;
+        box-shadow: 0 0 20px #00ff00;
+      }
+      .call-status-error {
+        border-color: #ff0000;
+        box-shadow: 0 0 20px #ff0000;
+      }
+      .call-status-disconnected {
+        border-color: #888;
+      }
+      @keyframes pulse-yellow {
+        0%, 100% { box-shadow: 0 0 10px #ffff00; }
+        50% { box-shadow: 0 0 30px #ffff00, 0 0 50px #ff00ff; }
+      }
+      #call-status-text {
+        color: #fff;
+        font-size: 2em;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      #hangup-button {
+        background: linear-gradient(135deg, #ff0000 0%, #aa0000 100%);
+        border: 2px solid #fff;
+        color: #fff;
+        padding: 8px 20px;
+        font-family: "Comic Sans MS", monospace;
+        font-size: 1em;
+        font-weight: bold;
+        cursor: pointer;
+        display: none;
+        margin: 10px auto 0;
+      }
+      #hangup-button:hover {
+        box-shadow: 0 0 15px #ff0000;
+      }
     </style>
   </head>
   <body>
+    <!-- Audio element for bot voice -->
+    <audio id="bot-audio" autoplay></audio>
+
+    <!-- Call status overlay -->
+    <div id="call-status" class="call-status">
+      <div id="call-status-text">Connecting...</div>
+      <button id="hangup-button">Hang Up</button>
+    </div>
+
     <div class="public-gh">
       <span
         ><a href="https://github.com/daily-co/pipecat-crush-quest"
@@ -397,6 +508,13 @@
         <p class="left-mar">each day a new crush awaits your call!</p>
       </div>
 
+      <!-- Caller ID input -->
+      <div class="caller-id-container">
+        <label for="caller-id-input">Your Phone #:</label>
+        <input type="text" id="caller-id-input" placeholder="+15551234567" />
+        <span style="color: #888; font-size: 0.9em; margin-left: 10px;">(your daily crush depends on this!)</span>
+      </div>
+
       <div class="laser-line"></div>
 
       <div class="location-group">
@@ -407,21 +525,21 @@
               <img src="img/Alex-1759956064.6494179.jpg" />
             </div>
             <div class="character-name">Alex 🍪 🧢</div>
-            <div class="character-phone">+1-337-333-8079</div>
+            <button class="call-button" data-number="+13373338079" data-name="Alex">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Sam-1759955593.622684.jpg" />
             </div>
             <div class="character-name">Sam 🍬 🧢</div>
-            <div class="character-phone">+1-337-333-8081</div>
+            <button class="call-button" data-number="+13373338081" data-name="Sam">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Jordan-1759897698.631128.jpg" />
             </div>
             <div class="character-name">Jordan 🍕 🧢</div>
-            <div class="character-phone">+1-337-333-8087</div>
+            <button class="call-button" data-number="+13373338087" data-name="Jordan">Call</button>
           </div>
         </div>
       </div>
@@ -436,21 +554,21 @@
               <img src="img/Taylor-1759870373.721441.jpg" />
             </div>
             <div class="character-name">Taylor 🍕 👓</div>
-            <div class="character-phone">+1-337-333-8444</div>
+            <button class="call-button" data-number="+13373338444" data-name="Taylor">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Morgan-1759870379.800228.jpg" />
             </div>
             <div class="character-name">Morgan 🍬 🟢</div>
-            <div class="character-phone">+1-337-333-8049</div>
+            <button class="call-button" data-number="+13373338049" data-name="Morgan">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Chris-1759870386.443118.jpg" />
             </div>
             <div class="character-name">Chris 🍪 🧢</div>
-            <div class="character-phone">+1-337-333-8102</div>
+            <button class="call-button" data-number="+13373338102" data-name="Chris">Call</button>
           </div>
         </div>
       </div>
@@ -465,21 +583,21 @@
               <img src="img/Casey-1759870393.4290838.jpg" />
             </div>
             <div class="character-name">Casey 🏐 🧥</div>
-            <div class="character-phone">+1-337-333-8059</div>
+            <button class="call-button" data-number="+13373338059" data-name="Casey">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Drew-1759870399.600501.jpg" />
             </div>
             <div class="character-name">Drew 🎾 👓</div>
-            <div class="character-phone">+1-337-333-8133</div>
+            <button class="call-button" data-number="+13373338133" data-name="Drew">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Skyler-1759870406.300543.jpg" />
             </div>
             <div class="character-name">Skyler 🏀 🟢</div>
-            <div class="character-phone">+1-337-333-8095</div>
+            <button class="call-button" data-number="+13373338095" data-name="Skyler">Call</button>
           </div>
         </div>
       </div>
@@ -494,21 +612,21 @@
               <img src="img/Jamie-1759870413.59007.jpg" />
             </div>
             <div class="character-name">Jamie 🏀 🧢</div>
-            <div class="character-phone">+1-337-333-8061</div>
+            <button class="call-button" data-number="+13373338061" data-name="Jamie">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Avery-1759870420.251284.jpg" />
             </div>
             <div class="character-name">Avery 🎾 🧥</div>
-            <div class="character-phone">+1-337-333-8021</div>
+            <button class="call-button" data-number="+13373338021" data-name="Avery">Call</button>
           </div>
           <div class="character-card">
             <div class="character-image">
               <img src="img/Riley-1759870426.198199.jpg" />
             </div>
             <div class="character-name">Riley 🏐 👓</div>
-            <div class="character-phone">+1-337-333-8082</div>
+            <button class="call-button" data-number="+13373338082" data-name="Riley">Call</button>
           </div>
         </div>
       </div>
@@ -531,5 +649,8 @@
         <div class="qr"><img src="img/crush_quest_contacts_qr.png" /></div>
       </footer>
     </div>
+
+    <!-- WebRTC Client Script -->
+    <script type="module" src="./js/webrtc-client.js"></script>
   </body>
 </html>
