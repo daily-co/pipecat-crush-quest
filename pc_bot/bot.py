@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from pipecat.adapters.schemas.function_schema import FunctionSchema
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
+from pipecat.audio.turn.smart_turn.base_smart_turn import SmartTurnParams
 from pipecat.audio.turn.smart_turn.local_smart_turn_v3 import LocalSmartTurnAnalyzerV3
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.audio.vad.vad_analyzer import VADParams
@@ -20,27 +21,24 @@ from pipecat.frames.frames import (
     LLMRunFrame,
     TTSSpeakFrame,
 )
+from pipecat.pipeline.pipeline import Pipeline
+from pipecat.pipeline.runner import PipelineRunner
+from pipecat.pipeline.task import PipelineParams, PipelineTask
+from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import (
     LLMContextAggregatorPair,
     LLMUserAggregatorParams,
 )
-from pipecat.turns.user_stop import TurnAnalyzerUserTurnStopStrategy
-from pipecat.turns.user_turn_strategies import UserTurnStrategies
-from pipecat.pipeline.pipeline import Pipeline
-from pipecat.pipeline.runner import PipelineRunner
-from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.frame_processor import FrameDirection
-from pipecat.processors.aggregators.llm_context import LLMContext
-from pipecat.services.google.gemini_live.llm import (
-    GeminiLiveLLMService,
-    HttpOptions,
-    InputParams,
-    ProactivityConfig,
-)
-from pipecat.transports.base_transport import BaseTransport, TransportParams
-from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.runner.types import RunnerArguments
 from pipecat.runner.utils import create_transport
+from pipecat.services.cartesia.tts import CartesiaTTSService
+from pipecat.services.deepgram.stt import DeepgramSTTService
+from pipecat.services.openai.llm import OpenAILLMService
+from pipecat.transports.base_transport import BaseTransport, TransportParams
+from pipecat.transports.daily.transport import DailyParams, DailyTransport
+from pipecat.turns.user_stop import TurnAnalyzerUserTurnStopStrategy
+from pipecat.turns.user_turn_strategies import UserTurnStrategies
 
 from crush_utils.crush_util import (
     get_clue,
@@ -86,7 +84,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     prompt = (
         f"{clue_giver['character']} You are a character in a 90s board game giving clues to the player about their secret crush."
         "focus on NOT sounding like a robot. channel MTV vibes. listen to the player."
-        "always start the conversation like you are answering the call of a player. Say 'hello?' or another typical, short phone greeting (with 90's style). Wait for the player to respond."
+        "you are answering a ringing phone and have NO idea who is calling. your entire first response must be ONLY a short, casual phone greeting like 'hello?' or 'yo, talk to me.' -- a few words, max. do NOT say your own name, do NOT introduce yourself, do NOT mention crushes or clues, and do NOT ask how you can help. just pick up, say the greeting, and wait to hear who it is."
         "liberally use early-mid 1990s teenage slang, not boomer slang. talk like you are in the tv show 'my so-called life'."
         "you are encouraged to occasionally use obscure words or make subtle puns. don't point them out, I'll know."
         "when the conversation is over or the user says bye, say 'talk to you later' and then use the `end_conversation` tool. Only call this after you have given the clue AND said 'bye, talk to you later'"
@@ -95,7 +93,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     prompt += (
         f"if the player asks you who has a crush on them, tell them: "
         f"'{clue}'. Only, like, tell this clue if you are asked about who the crush is. or if the player asks something like 'who likes me?'"
-        "do not under ANY circumstances fabricate ANY other clues, especially if the clue is 'Haaaa-haaa! I'm not telling'. only tell the player the aforementioned _clue_. be evasive by talking about the weather or the game on saturday."
+        "do not under ANY circumstances fabricate ANY other clues, especially if the clue is 'Haaaa-haaa! I'm not telling'. only tell the player the aforementioned _clue_. be evasive in a 90's way."
         "answer the player's questions and be, like, totally liberal with the 90s-speak."
         "your responses will be converted to audio, so keep them short and clear, and avoid special characters."
     )
@@ -137,21 +135,17 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         await asyncio.sleep(2)
         await params.llm.queue_frame(EndTaskFrame(), FrameDirection.UPSTREAM)
 
-    gemini_model = "gemini-2.5-flash-native-audio-preview-09-2025"
-    logger.debug(f"________** USING GEMINI MODEL: {gemini_model}")
+    # Cascade services: Deepgram STT -> OpenAI LLM -> Cartesia TTS
+    stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
 
-    # Initialize the Gemini Live model
-    llm = GeminiLiveLLMService(
-        api_key=os.getenv("GOOGLE_API_KEY"),
-        voice_id=clue_giver["voice_id"],
-        system_instruction=prompt,
-        tools=tools,
-        model=gemini_model,
-        http_options=HttpOptions(api_version="v1alpha"),
-        input_params=InputParams(
-            enable_affective_dialog=True,
-            proactivity=ProactivityConfig(proactive_audio=True),
-        ),
+    llm = OpenAILLMService(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        settings=OpenAILLMService.Settings(model="gpt-4.1-mini"),
+    )
+
+    tts = CartesiaTTSService(
+        api_key=os.getenv("CARTESIA_API_KEY"),
+        settings=CartesiaTTSService.Settings(voice=clue_giver["voice_id"]),
     )
 
     llm.register_function("end_conversation", handle_end_conversation)
@@ -161,7 +155,15 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
         context,
         user_params=LLMUserAggregatorParams(
             user_turn_strategies=UserTurnStrategies(
-                stop=[TurnAnalyzerUserTurnStopStrategy(turn_analyzer=LocalSmartTurnAnalyzerV3())]
+                stop=[
+                    TurnAnalyzerUserTurnStopStrategy(
+                        # Default fallback is 3s of silence when the model thinks
+                        # the turn is incomplete; 1s keeps the game snappy.
+                        turn_analyzer=LocalSmartTurnAnalyzerV3(
+                            params=SmartTurnParams(stop_secs=1.0)
+                        )
+                    )
+                ]
             ),
         ),
     )
@@ -170,8 +172,10 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     pipeline = Pipeline(
         [
             transport.input(),
+            stt,
             user_aggregator,
             llm,
+            tts,
             transport.output(),
             assistant_aggregator,
         ]
@@ -190,14 +194,25 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     async def on_pipeline_error(task, frame):
         logger.error(f"Pipeline error: {frame}")
 
+    # Both on_client_connected and on_first_participant_joined fire for a
+    # single Daily join, so the kickoff must only run once.
+    conversation_started = False
+
+    async def start_conversation():
+        nonlocal conversation_started
+        if conversation_started:
+            return
+        conversation_started = True
+        await asyncio.sleep(1)
+        # Kick off the conversation: the bot answers the ringing phone.
+        messages.append({"role": "user", "content": "(ring ring... you pick up the phone)"})
+        await task.queue_frames([LLMRunFrame()])
+
     # Generic event handlers that work with both Daily and WebRTC transports
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         logger.info(f"Client connected: {client}")
-        await asyncio.sleep(1)
-        # Kick off the conversation.
-        messages.append({"role": "user", "content": "Heyhey"})
-        await task.queue_frames([LLMRunFrame()])
+        await start_conversation()
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
@@ -208,10 +223,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
         logger.info(f"Participant joined: {participant}")
-        await asyncio.sleep(1)
-        # Kick off the conversation.
-        messages.append({"role": "user", "content": "Heyhey"})
-        await task.queue_frames([LLMRunFrame()])
+        await start_conversation()
 
     @transport.event_handler("on_participant_left")
     async def on_participant_left(transport, participant, reason):
@@ -230,13 +242,11 @@ async def bot(runner_args: RunnerArguments):
         "daily": lambda: DailyParams(
             audio_in_enabled=True,
             audio_out_enabled=True,
-            vad_enabled=True,
             vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.2)),
         ),
         "webrtc": lambda: TransportParams(
             audio_in_enabled=True,
             audio_out_enabled=True,
-            vad_enabled=True,
             vad_analyzer=SileroVADAnalyzer(params=VADParams(stop_secs=0.2)),
         ),
     }
