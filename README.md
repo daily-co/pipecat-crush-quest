@@ -4,7 +4,7 @@
 
 A webrtc/voice AI game to discover who likes you <3
 
-Built using [Pipecat](https://github.com/pipecat-ai/pipecat), [Pipecat Cloud](https://pipecat.daily.co/), Gemini Live, and Daily.
+Built using [Pipecat](https://github.com/pipecat-ai/pipecat), [Pipecat Cloud](https://pipecat.daily.co/), Deepgram, OpenAI, Cartesia, and Daily.
 
 ## Demo
 
@@ -30,10 +30,12 @@ Start the quest [here](https://daily-co.github.io/pipecat-crush-quest/)
 
 ### Dependencies
 
-- Python 3.10+
+- Python 3.11+
 - `uv` package manager
+- Deepgram API Key (STT)
+- OpenAI API Key (LLM)
+- Cartesia API Key (TTS)
 - Gemini API Key
-  * [required] permissions to use Gemini Live model `gemini-2.5-flash-native-audio-preview-09-2025`
   * [optional] permissions to use Nano Banana (to generate new character images)
 - Daily API Key
   * [required] for prod

@@ -4,7 +4,7 @@
  */
 
 // Import Daily.co JavaScript SDK
-import DailyIframe from 'https://esm.sh/@daily-co/daily-js@0.84.0';
+import DailyIframe from 'https://esm.sh/@daily-co/daily-js@0.92.2';
 
 // Configuration - uses relative path for Vercel serverless function
 const BOT_SERVER_URL = window.CRUSH_QUEST_BOT_URL || '';
